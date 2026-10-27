@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node.js
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# System
+.DS_Store
