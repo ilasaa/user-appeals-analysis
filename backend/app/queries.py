@@ -226,3 +226,72 @@ GET_ANALYTICS_CATEGORIES = """
 
     ORDER BY appeals_count DESC, category_name ASC;
 """
+
+# Динамика количества обращений
+GET_ANALYTICS_TIMELINE = """
+    WITH bounds AS (
+        SELECT
+            (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::date
+                AS end_date,
+
+            (
+                (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::date
+                - (%(days)s::integer - 1)
+            ) AS start_date
+    ),
+
+    periods AS (
+        SELECT
+            generate_series(
+                date_trunc(
+                    %(period)s::text,
+                    b.start_date::timestamp
+                ),
+                date_trunc(
+                    %(period)s::text,
+                    b.end_date::timestamp
+                ),
+                CASE %(period)s::text
+                    WHEN 'day' THEN INTERVAL '1 day'
+                    WHEN 'week' THEN INTERVAL '1 week'
+                    ELSE INTERVAL '1 month'
+                END
+            )::date AS period_start
+
+        FROM bounds AS b
+    ),
+
+    appeal_counts AS (
+        SELECT
+            date_trunc(
+                %(period)s::text,
+                a.created_at AT TIME ZONE 'UTC'
+            )::date AS period_start,
+
+            COUNT(*) AS appeals_count
+
+        FROM appeals AS a
+        CROSS JOIN bounds AS b
+
+        WHERE
+            a.created_at >= (
+                b.start_date::timestamp AT TIME ZONE 'UTC'
+            )
+            AND a.created_at < (
+                (b.end_date + 1)::timestamp AT TIME ZONE 'UTC'
+            )
+
+        GROUP BY 1
+    )
+
+    SELECT
+        p.period_start,
+        COALESCE(a.appeals_count, 0) AS appeals_count
+
+    FROM periods AS p
+
+    LEFT JOIN appeal_counts AS a
+        ON p.period_start = a.period_start
+
+    ORDER BY p.period_start;
+"""

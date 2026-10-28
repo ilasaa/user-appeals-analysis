@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -108,4 +108,8 @@ class AnalyticsSummary(BaseModel):
 class CategoryAnalytics(BaseModel):
     category_id: int | None
     category_name: str
+    appeals_count: int
+
+class TimelinePoint(BaseModel):
+    period_start: date
     appeals_count: int

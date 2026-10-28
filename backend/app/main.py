@@ -2,6 +2,8 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, status
 
+from app.routers.analytics import router as analytics_router
+
 from app.db import get_connection
 from app.queries import (
     COUNT_APPEALS,
@@ -14,8 +16,6 @@ from app.queries import (
     GET_CATEGORY_BY_ID,
     UPDATE_APPEAL,
     UPDATE_APPEAL_STATUS,
-    GET_ANALYTICS_SUMMARY,
-    GET_ANALYTICS_CATEGORIES,
 )
 from app.schemas import (
     AppealCreate,
@@ -25,15 +25,13 @@ from app.schemas import (
     AppealsPage,
     CategoryCreate,
     CategoryResponse,
-    AnalyticsSummary,
-    CategoryAnalytics,
 )
 
 app = FastAPI(
     title="Appeals Analysis API",
     version="0.1.0",
 )
-
+app.include_router(analytics_router)
 
 @app.get("/")
 def root():
@@ -445,32 +443,4 @@ def create_category(category: CategoryCreate):
 
     return created_category
 
-@app.get(
-    "/api/analytics/summary",
-    response_model=AnalyticsSummary,
-)
-def get_analytics_summary():
-    with (
-        get_connection() as connection,
-        connection.cursor() as cursor,
-    ):
-        cursor.execute(GET_ANALYTICS_SUMMARY)
 
-        summary = cursor.fetchone()
-
-    return summary
-
-@app.get(
-    "/api/analytics/categories",
-    response_model=list[CategoryAnalytics],
-)
-def get_analytics_categories():
-    with (
-        get_connection() as connection,
-        connection.cursor() as cursor,
-    ):
-        cursor.execute(GET_ANALYTICS_CATEGORIES)
-
-        categories = cursor.fetchall()
-
-    return categories
