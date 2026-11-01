@@ -41,14 +41,24 @@ def test_summary_counts_and_resolution_time(client):
     resolved = create_appeal(client, title="Третье обращение")
     closed = create_appeal(client, title="Четвёртое обращение")
 
-    assert client.patch(
-        f"/api/appeals/{in_progress['id']}/status",
-        json={"status": "in_progress"},
-    ).status_code == 200
-    for appeal, status in [(resolved, "resolved"), (closed, "resolved"), (closed, "closed")]:
-        assert client.patch(
-            f"/api/appeals/{appeal['id']}/status", json={"status": status}
-        ).status_code == 200
+    assert (
+        client.patch(
+            f"/api/appeals/{in_progress['id']}/status",
+            json={"status": "in_progress"},
+        ).status_code
+        == 200
+    )
+    for appeal, status in [
+        (resolved, "resolved"),
+        (closed, "resolved"),
+        (closed, "closed"),
+    ]:
+        assert (
+            client.patch(
+                f"/api/appeals/{appeal['id']}/status", json={"status": status}
+            ).status_code
+            == 200
+        )
 
     response = client.get("/api/analytics/summary")
     assert response.status_code == 200
@@ -144,6 +154,4 @@ def test_timeline_default_parameters(client):
     ],
 )
 def test_timeline_invalid_parameters(client, params):
-    assert client.get(
-        "/api/analytics/timeline", params=params
-    ).status_code == 422
+    assert client.get("/api/analytics/timeline", params=params).status_code == 422

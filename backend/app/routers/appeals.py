@@ -21,7 +21,6 @@ from app.schemas import (
     AppealsPage,
 )
 
-
 router = APIRouter(
     prefix="/api/appeals",
     tags=["Appeals"],
@@ -33,58 +32,53 @@ router = APIRouter(
     response_model=AppealsPage,
 )
 def get_appeals(
-    status: Literal[
-        "new",
-        "in_progress",
-        "resolved",
-        "closed",
-    ] | None = None,
-
-    priority: Literal[
-        "low",
-        "medium",
-        "high",
-        "critical",
-    ] | None = None,
-
+    status: (
+        Literal[
+            "new",
+            "in_progress",
+            "resolved",
+            "closed",
+        ]
+        | None
+    ) = None,
+    priority: (
+        Literal[
+            "low",
+            "medium",
+            "high",
+            "critical",
+        ]
+        | None
+    ) = None,
     category_id: int | None = Query(
         default=None,
         gt=0,
     ),
-
     search: str | None = Query(
         default=None,
         min_length=1,
         max_length=200,
     ),
-
     page: int = Query(
         default=1,
         ge=1,
     ),
-
     page_size: int = Query(
         default=10,
         ge=1,
         le=100,
     ),
-
     sort_by: Literal[
         "created_at",
         "updated_at",
         "priority",
     ] = "created_at",
-
     sort_order: Literal[
         "asc",
         "desc",
     ] = "desc",
 ):
-    search_pattern = (
-        f"%{search.strip()}%"
-        if search and search.strip()
-        else None
-    )
+    search_pattern = f"%{search.strip()}%" if search and search.strip() else None
 
     filters = {
         "status": status,
@@ -138,9 +132,7 @@ def get_appeals(
 
         appeals = cursor.fetchall()
 
-    total_pages = (
-        total + page_size - 1
-    ) // page_size
+    total_pages = (total + page_size - 1) // page_size
 
     return {
         "items": appeals,
@@ -274,10 +266,7 @@ def update_appeal(
         get_connection() as connection,
         connection.cursor() as cursor,
     ):
-        if (
-            "category_id" in changed_fields
-            and data.category_id is not None
-        ):
+        if "category_id" in changed_fields and data.category_id is not None:
             cursor.execute(
                 GET_CATEGORY_BY_ID,
                 (data.category_id,),

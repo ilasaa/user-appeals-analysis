@@ -4,15 +4,9 @@ from app.db import get_connection
 from app.queries import (
     GET_ANALYTICS_CATEGORIES,
     GET_ANALYTICS_SUMMARY,
-    GET_ANALYTICS_TIMELINE
-    
+    GET_ANALYTICS_TIMELINE,
 )
-from app.schemas import (
-    AnalyticsSummary,
-    CategoryAnalytics,
-    TimelinePoint
-)
-
+from app.schemas import AnalyticsSummary, CategoryAnalytics, TimelinePoint
 
 router = APIRouter(
     prefix="/api/analytics",
@@ -51,6 +45,7 @@ def get_analytics_categories():
 
     return categories
 
+
 @router.get(
     "/timeline",
     response_model=list[TimelinePoint],
@@ -61,7 +56,6 @@ def get_analytics_timeline(
         "week",
         "month",
     ] = "day",
-
     days: int = Query(
         default=30,
         ge=1,

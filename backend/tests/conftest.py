@@ -17,7 +17,6 @@ from psycopg.rows import dict_row
 from app.main import app
 from app.routers import appeals, categories, analytics
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(PROJECT_ROOT / ".env.test", override=False)
 
@@ -33,9 +32,11 @@ def test_db_url():
         )
 
     parsed = urlsplit(url)
-    if parsed.scheme not in {"postgresql", "postgres"} or (
-        parsed.hostname not in {"localhost", "127.0.0.1"}
-    ) or parsed.path != "/appeals_test_db":
+    if (
+        parsed.scheme not in {"postgresql", "postgres"}
+        or (parsed.hostname not in {"localhost", "127.0.0.1"})
+        or parsed.path != "/appeals_test_db"
+    ):
         pytest.fail(
             "Safety check failed: TEST_DATABASE_URL must point to "
             "postgresql://...@localhost:<port>/appeals_test_db "
@@ -75,9 +76,7 @@ def client(monkeypatch, test_db_url):
     def clean_database():
         with test_connection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute(
-                    "TRUNCATE TABLE appeals, categories RESTART IDENTITY"
-                )
+                cursor.execute("TRUNCATE TABLE appeals, categories RESTART IDENTITY")
 
     clean_database()
     try:

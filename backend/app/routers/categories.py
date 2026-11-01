@@ -11,7 +11,6 @@ from app.schemas import (
     CategoryResponse,
 )
 
-
 router = APIRouter(
     prefix="/api/categories",
     tags=["Categories"],

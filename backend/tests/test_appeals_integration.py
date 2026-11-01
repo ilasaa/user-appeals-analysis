@@ -24,7 +24,10 @@ def test_appeals_empty_page(client):
     response = client.get("/api/appeals")
     assert response.status_code == 200
     assert response.json() == {
-        "items": [], "total": 0, "page": 1, "page_size": 10,
+        "items": [],
+        "total": 0,
+        "page": 1,
+        "page_size": 10,
         "total_pages": 0,
     }
 
@@ -48,9 +51,7 @@ def test_create_appeal_defaults_and_get_by_id(client):
 
 def test_create_appeal_with_category(client):
     category = make_category(client)
-    appeal = make_appeal(
-        client, category_id=category["id"], priority="high"
-    )
+    appeal = make_appeal(client, category_id=category["id"], priority="high")
     assert appeal["category_id"] == category["id"]
     assert appeal["category_name"] == category["name"]
     assert appeal["priority"] == "high"
@@ -73,7 +74,11 @@ def test_create_appeal_unknown_category(client):
         {"title": "x" * 201, "description": "Описание"},
         {"title": "Нормальный заголовок", "description": ""},
         {"title": "Нормальный заголовок"},
-        {"title": "Нормальный заголовок", "description": "Описание", "priority": "urgent"},
+        {
+            "title": "Нормальный заголовок",
+            "description": "Описание",
+            "priority": "urgent",
+        },
         {"title": "Нормальный заголовок", "description": "Описание", "category_id": 0},
     ],
 )
@@ -119,7 +124,9 @@ def test_filter_by_status_priority_and_category(client):
     response = client.get(
         "/api/appeals",
         params={
-            "status": "in_progress", "priority": "high", "category_id": category["id"]
+            "status": "in_progress",
+            "priority": "high",
+            "category_id": category["id"],
         },
     )
     assert response.status_code == 200
@@ -148,7 +155,9 @@ def test_sort_by_priority(client):
     )
     assert response.status_code == 200
     assert [row["id"] for row in response.json()["items"]] == [
-        critical["id"], high["id"], low["id"]
+        critical["id"],
+        high["id"],
+        low["id"],
     ]
 
 
@@ -177,9 +186,7 @@ def test_patch_appeal_fields(client):
 def test_patch_appeal_can_clear_category(client):
     category = make_category(client)
     appeal = make_appeal(client, category_id=category["id"])
-    response = client.patch(
-        f"/api/appeals/{appeal['id']}", json={"category_id": None}
-    )
+    response = client.patch(f"/api/appeals/{appeal['id']}", json={"category_id": None})
     assert response.status_code == 200
     assert response.json()["category_id"] is None
     assert response.json()["category_name"] is None
@@ -205,9 +212,7 @@ def test_patch_appeal_rejects_invalid_data(client, patch):
 
 def test_patch_appeal_unknown_category(client):
     appeal = make_appeal(client)
-    response = client.patch(
-        f"/api/appeals/{appeal['id']}", json={"category_id": 999}
-    )
+    response = client.patch(f"/api/appeals/{appeal['id']}", json={"category_id": 999})
     assert response.status_code == 404
     assert response.json()["detail"] == "Category not found"
 
@@ -244,9 +249,12 @@ def test_status_lifecycle(client):
 
 def test_patch_status_invalid_and_missing_id(client):
     appeal = make_appeal(client)
-    assert client.patch(
-        f"/api/appeals/{appeal['id']}/status", json={"status": "paused"}
-    ).status_code == 422
+    assert (
+        client.patch(
+            f"/api/appeals/{appeal['id']}/status", json={"status": "paused"}
+        ).status_code
+        == 422
+    )
     response = client.patch("/api/appeals/999/status", json={"status": "closed"})
     assert response.status_code == 404
 

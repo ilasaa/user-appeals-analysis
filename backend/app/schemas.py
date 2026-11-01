@@ -17,6 +17,7 @@ class AppealCreate(BaseModel):
         "critical",
     ] = "medium"
 
+
 class AppealUpdate(BaseModel):
     title: str | None = Field(
         default=None,
@@ -34,12 +35,15 @@ class AppealUpdate(BaseModel):
         gt=0,
     )
 
-    priority: Literal[
-        "low",
-        "medium",
-        "high",
-        "critical",
-    ] | None = None
+    priority: (
+        Literal[
+            "low",
+            "medium",
+            "high",
+            "critical",
+        ]
+        | None
+    ) = None
 
     @model_validator(mode="after")
     def validate_update(self):
@@ -47,13 +51,11 @@ class AppealUpdate(BaseModel):
             raise ValueError("At least one field is required")
 
         for field in ("title", "description", "priority"):
-            if (
-                field in self.model_fields_set
-                and getattr(self, field) is None
-            ):
+            if field in self.model_fields_set and getattr(self, field) is None:
                 raise ValueError(f"{field} cannot be null")
 
         return self
+
 
 class AppealResponse(BaseModel):
     id: int
@@ -71,12 +73,14 @@ class AppealResponse(BaseModel):
     updated_at: datetime
     resolved_at: datetime | None
 
+
 class AppealsPage(BaseModel):
     items: list[AppealResponse]
     total: int
     page: int
     page_size: int
     total_pages: int
+
 
 class CategoryCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
@@ -89,6 +93,7 @@ class CategoryResponse(BaseModel):
     description: str | None
     created_at: datetime
 
+
 class AppealStatusUpdate(BaseModel):
     status: Literal[
         "new",
@@ -96,6 +101,7 @@ class AppealStatusUpdate(BaseModel):
         "resolved",
         "closed",
     ]
+
 
 class AnalyticsSummary(BaseModel):
     total_appeals: int
@@ -105,10 +111,12 @@ class AnalyticsSummary(BaseModel):
     closed_appeals: int
     average_resolution_hours: float | None
 
+
 class CategoryAnalytics(BaseModel):
     category_id: int | None
     category_name: str
     appeals_count: int
+
 
 class TimelinePoint(BaseModel):
     period_start: date
