@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 
-function AppealDetails({ appealId, onClose, statusNames, priorityNames }) {
+function AppealDetails({
+  appealId,
+  onClose,
+  statusNames,
+  priorityNames,
+}) {
   const [appeal, setAppeal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,7 +21,7 @@ function AppealDetails({ appealId, onClose, statusNames, priorityNames }) {
       try {
         const response = await fetch(
           `http://localhost:8000/api/appeals/${appealId}`,
-          { signal: controller.signal },
+          { signal: controller.signal }
         );
 
         if (!response.ok) {
@@ -52,6 +57,7 @@ function AppealDetails({ appealId, onClose, statusNames, priorityNames }) {
 
   return (
     <section className="appeal-details">
+
       <div className="appeal-details-header">
         <h2>Подробная информация</h2>
 
@@ -66,7 +72,11 @@ function AppealDetails({ appealId, onClose, statusNames, priorityNames }) {
 
       {loading && <p>Загрузка обращения...</p>}
 
-      {error && <p className="error">Ошибка загрузки: {error}</p>}
+      {error && (
+        <p className="error" role="alert">
+          Ошибка загрузки: {error}
+        </p>
+      )}
 
       {!loading && !error && appeal && (
         <>
@@ -80,14 +90,19 @@ function AppealDetails({ appealId, onClose, statusNames, priorityNames }) {
           </div>
 
           <div className="appeal-info-grid">
+
             <div>
               <span>Категория</span>
-              <strong>{appeal.category_name ?? "Без категории"}</strong>
+              <strong>
+                {appeal.category_name ?? "Без категории"}
+              </strong>
             </div>
 
             <div>
               <span>Статус</span>
-              <strong>{statusNames[appeal.status] ?? appeal.status}</strong>
+              <strong>
+                {statusNames[appeal.status] ?? appeal.status}
+              </strong>
             </div>
 
             <div>
@@ -99,18 +114,25 @@ function AppealDetails({ appealId, onClose, statusNames, priorityNames }) {
 
             <div>
               <span>Дата создания</span>
-              <strong>{formatDate(appeal.created_at)}</strong>
+              <strong>
+                {formatDate(appeal.created_at)}
+              </strong>
             </div>
 
             <div>
               <span>Последнее изменение</span>
-              <strong>{formatDate(appeal.updated_at)}</strong>
+              <strong>
+                {formatDate(appeal.updated_at)}
+              </strong>
             </div>
 
             <div>
               <span>Дата решения</span>
-              <strong>{formatDate(appeal.resolved_at)}</strong>
+              <strong>
+                {formatDate(appeal.resolved_at)}
+              </strong>
             </div>
+
           </div>
         </>
       )}

@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
+
 import AppealDetails from "./AppealDetails";
+import CreateAppeal from "./CreateAppeal";
+
+
 const statusNames = {
   new: "Новое",
   in_progress: "В работе",
@@ -14,8 +18,9 @@ const priorityNames = {
   critical: "Критический",
 };
 
-function AppealsList() {
-  // Данные обращений
+
+function AppealsList({ onAppealsChanged }) {
+  // Данные
   const [appeals, setAppeals] = useState([]);
   const [categories, setCategories] = useState([]);
 
@@ -24,8 +29,10 @@ function AppealsList() {
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
 
-  // Фильтры
+  // Фильтрация
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -39,11 +46,15 @@ function AppealsList() {
   const [error, setError] = useState(null);
   const [categoriesError, setCategoriesError] = useState(null);
 
-  // Отдельное состояние для поиска с задержкой
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  // Cостояние хранит ID обращения, которое выбрал пользователь
+  // Подробная информация
   const [selectedAppealId, setSelectedAppealId] = useState(null);
+
+  // Создание обращений
+  const [showCreateForm, setShowCreateForm] = useState(false);
+
+  // Повторная загрузка списка
+  const [reloadKey, setReloadKey] = useState(0);
+
 
   // Загрузка категорий
   useEffect(() => {
@@ -51,9 +62,10 @@ function AppealsList() {
 
     async function loadCategories() {
       try {
-        const response = await fetch("http://localhost:8000/api/categories", {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          "http://localhost:8000/api/categories",
+          { signal: controller.signal }
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error: ${response.status}`);
@@ -62,6 +74,7 @@ function AppealsList() {
         const data = await response.json();
 
         setCategories(data);
+        setCategoriesError(null);
       } catch (err) {
         if (err.name !== "AbortError") {
           setCategoriesError(err.message);
@@ -74,7 +87,8 @@ function AppealsList() {
     return () => controller.abort();
   }, []);
 
-  // Задержка перед поисковым запросом
+
+  // Задержка поиска
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search.trim());
@@ -82,6 +96,7 @@ function AppealsList() {
 
     return () => clearTimeout(timer);
   }, [search]);
+
 
   // Загрузка обращений
   useEffect(() => {
@@ -117,7 +132,7 @@ function AppealsList() {
       try {
         const response = await fetch(
           `http://localhost:8000/api/appeals?${params}`,
-          { signal: controller.signal },
+          { signal: controller.signal }
         );
 
         if (!response.ok) {
@@ -143,33 +158,94 @@ function AppealsList() {
     loadAppeals();
 
     return () => controller.abort();
-  }, [page, debouncedSearch, status, priority, categoryId, sortBy, sortOrder]);
+  }, [
+    page,
+    debouncedSearch,
+    status,
+    priority,
+    categoryId,
+    sortBy,
+    sortOrder,
+    reloadKey,
+  ]);
+
 
   // Сброс фильтров
   function resetFilters() {
     setSearch("");
     setDebouncedSearch("");
+
     setStatus("");
     setPriority("");
     setCategoryId("");
+
     setSortBy("created_at");
     setSortOrder("desc");
+
     setPage(1);
   }
 
+
+  // Обработка создания нового обращения
+  function handleAppealCreated(newAppeal) {
+    // Закрываем форму
+    setShowCreateForm(false);
+
+    // Сбрасываем фильтры
+    resetFilters();
+
+    // Открываем подробную карточку
+    setSelectedAppealId(newAppeal.id);
+
+    // Обновляем таблицу
+    setReloadKey((value) => value + 1);
+
+    // Обновляем статистику
+    onAppealsChanged?.();
+  }
+
+
   return (
     <section className="appeals-section">
+
+      {/* Заголовок и кнопка создания */}
       <div className="appeals-heading">
         <h2>Список обращений</h2>
-        <span>Найдено: {total}</span>
+
+        <div className="appeals-heading-actions">
+          <span>Найдено: {total}</span>
+
+          {!showCreateForm && (
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => setShowCreateForm(true)}
+            >
+              + Создать обращение
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Панель поиска и фильтрации */}
+
+      {/* Форма создания обращения */}
+      {showCreateForm && (
+        <CreateAppeal
+          categories={categories}
+          onCreated={handleAppealCreated}
+          onCancel={() => setShowCreateForm(false)}
+        />
+      )}
+
+
+      {/* Поиск и фильтрация */}
       <div className="appeals-filters">
+
         <div className="search-field">
           <input
             type="text"
             placeholder="Поиск по обращениям..."
+            aria-label="Поиск по обращениям"
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -179,8 +255,10 @@ function AppealsList() {
         </div>
 
         <div className="filters-row">
-          {/* Статус */}
+
+          {/* Фильтр по статусу */}
           <select
+            aria-label="Статус обращения"
             value={status}
             onChange={(event) => {
               setStatus(event.target.value);
@@ -196,8 +274,10 @@ function AppealsList() {
             ))}
           </select>
 
-          {/* Категория */}
+
+          {/* Фильтр по категории */}
           <select
+            aria-label="Категория обращения"
             value={categoryId}
             onChange={(event) => {
               setCategoryId(event.target.value);
@@ -207,14 +287,19 @@ function AppealsList() {
             <option value="">Все категории</option>
 
             {categories.map((category) => (
-              <option key={category.id} value={category.id}>
+              <option
+                key={category.id}
+                value={category.id}
+              >
                 {category.name}
               </option>
             ))}
           </select>
 
-          {/* Приоритет */}
+
+          {/* Фильтр по приоритету */}
           <select
+            aria-label="Приоритет обращения"
             value={priority}
             onChange={(event) => {
               setPriority(event.target.value);
@@ -230,51 +315,68 @@ function AppealsList() {
             ))}
           </select>
 
+
           {/* Поле сортировки */}
           <select
+            aria-label="Поле сортировки"
             value={sortBy}
             onChange={(event) => {
               setSortBy(event.target.value);
               setPage(1);
             }}
           >
-            <option value="created_at">По дате создания</option>
-            <option value="updated_at">По дате обновления</option>
-            <option value="priority">По приоритету</option>
+            <option value="created_at">
+              По дате создания
+            </option>
+
+            <option value="updated_at">
+              По дате обновления
+            </option>
+
+            <option value="priority">
+              По приоритету
+            </option>
           </select>
 
-          {/* Направление сортировки */}
+
+          {/* Порядок сортировки */}
           <select
+            aria-label="Направление сортировки"
             value={sortOrder}
             onChange={(event) => {
               setSortOrder(event.target.value);
               setPage(1);
             }}
           >
-            <option value="desc">По убыванию</option>
-            <option value="asc">По возрастанию</option>
+            <option value="desc">
+              По убыванию
+            </option>
+
+            <option value="asc">
+              По возрастанию
+            </option>
           </select>
 
-          <button type="button" className="reset-button" onClick={resetFilters}>
+
+          {/* Сброс */}
+          <button
+            type="button"
+            className="reset-button"
+            onClick={resetFilters}
+          >
             Сбросить
           </button>
+
         </div>
 
         {categoriesError && (
-          <p className="error">
-            Не удалось загрузить категории: {categoriesError}
+          <p className="error" role="alert">
+            Ошибка загрузки категорий: {categoriesError}
           </p>
         )}
       </div>
 
-      {/* Состояния загрузки */}
-      {loading && <p>Загрузка обращений...</p>}
 
-      {error && <p className="error">Ошибка загрузки обращений: {error}</p>}
-
-      {!loading && !error && appeals.length === 0 && (
-        <p>Обращения не найдены.</p>
-      )}
       {/* Подробная информация об обращении */}
       {selectedAppealId !== null && (
         <AppealDetails
@@ -284,10 +386,31 @@ function AppealsList() {
           priorityNames={priorityNames}
         />
       )}
-      {/* Таблица */}
+
+
+      {/* Состояние загрузки */}
+      {loading && (
+        <p>Загрузка обращений...</p>
+      )}
+
+      {error && (
+        <p className="error" role="alert">
+          Ошибка загрузки обращений: {error}
+        </p>
+      )}
+
+
+      {/* Пустой список */}
+      {!loading && !error && appeals.length === 0 && (
+        <p>Обращения не найдены.</p>
+      )}
+
+
+      {/* Таблица обращений */}
       {!loading && !error && appeals.length > 0 && (
         <>
           <div className="table-wrapper">
+
             <table className="appeals-table">
               <thead>
                 <tr>
@@ -303,36 +426,55 @@ function AppealsList() {
               <tbody>
                 {appeals.map((appeal) => (
                   <tr key={appeal.id}>
+
                     <td>{appeal.id}</td>
 
                     <td>
                       <button
                         type="button"
                         className="appeal-title-button"
-                        onClick={() => setSelectedAppealId(appeal.id)}
+                        onClick={() =>
+                          setSelectedAppealId(appeal.id)
+                        }
                       >
                         {appeal.title}
                       </button>
                     </td>
 
-                    <td>{appeal.category_name ?? "Без категории"}</td>
-
-                    <td>{statusNames[appeal.status] ?? appeal.status}</td>
-
-                    <td>{priorityNames[appeal.priority] ?? appeal.priority}</td>
+                    <td>
+                      {appeal.category_name ?? "Без категории"}
+                    </td>
 
                     <td>
-                      {new Date(appeal.created_at).toLocaleString("ru-RU")}
+                      {statusNames[appeal.status] ?? appeal.status}
                     </td>
+
+                    <td>
+                      {priorityNames[appeal.priority] ?? appeal.priority}
+                    </td>
+
+                    <td>
+                      {new Date(
+                        appeal.created_at
+                      ).toLocaleString("ru-RU")}
+                    </td>
+
                   </tr>
                 ))}
               </tbody>
             </table>
+
           </div>
+
 
           {/* Пагинация */}
           <div className="pagination">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() => setPage((value) => value - 1)}
+            >
               Назад
             </button>
 
@@ -341,14 +483,17 @@ function AppealsList() {
             </span>
 
             <button
+              type="button"
               disabled={page >= totalPages}
-              onClick={() => setPage(page + 1)}
+              onClick={() => setPage((value) => value + 1)}
             >
               Далее
             </button>
+
           </div>
         </>
       )}
+
     </section>
   );
 }

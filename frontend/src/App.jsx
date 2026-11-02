@@ -6,14 +6,19 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [summaryVersion, setSummaryVersion] = useState(0);
+
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadSummary() {
+      setLoading(true);
+      setError(null);
+
       try {
         const response = await fetch(
           "http://localhost:8000/api/analytics/summary",
-          { signal: controller.signal },
+          { signal: controller.signal }
         );
 
         if (!response.ok) {
@@ -26,6 +31,7 @@ function App() {
       } catch (err) {
         if (err.name !== "AbortError") {
           setError(err.message);
+          setSummary(null);
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -37,7 +43,7 @@ function App() {
     loadSummary();
 
     return () => controller.abort();
-  }, []);
+  }, [summaryVersion]);
 
   return (
     <main className="dashboard">
@@ -48,7 +54,11 @@ function App() {
 
       {loading && <p>Загрузка статистики...</p>}
 
-      {error && <p className="error">Ошибка: {error}</p>}
+      {error && (
+        <p className="error">
+          Ошибка загрузки статистики: {error}
+        </p>
+      )}
 
       {summary && (
         <section className="stats">
@@ -78,7 +88,12 @@ function App() {
           </div>
         </section>
       )}
-      <AppealsList />
+
+      <AppealsList
+        onAppealsChanged={() => {
+          setSummaryVersion((value) => value + 1);
+        }}
+      />
     </main>
   );
 }

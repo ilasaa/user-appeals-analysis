@@ -1,3 +1,5 @@
+/* Основные стили */
+
 * {
   box-sizing: border-box;
 }
@@ -8,6 +10,13 @@ body {
   font-family: Arial, sans-serif;
   background-color: #f4f6f9;
   color: #1e293b;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 .dashboard {
@@ -28,9 +37,19 @@ header p {
   color: #64748b;
 }
 
+.error {
+  color: #dc2626;
+}
+
+
+/* Статистические карточки */
+
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(200px, 1fr)
+  );
   gap: 20px;
 }
 
@@ -53,72 +72,13 @@ header p {
   font-weight: bold;
 }
 
-.error {
-  color: #dc2626;
-}
+
+/* Список обращений */
 
 .appeals-section {
   margin-top: 50px;
 }
 
-.appeals-section h2 {
-  margin-bottom: 24px;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-.appeals-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.appeals-table th,
-.appeals-table td {
-  padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.appeals-table th {
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 14px;
-}
-
-.appeals-table tbody tr:hover {
-  background: #f8fafc;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  margin-top: 24px;
-}
-
-.pagination button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  cursor: pointer;
-}
-
-.pagination button:hover:not(:disabled) {
-  background: #1d4ed8;
-}
-
-.pagination button:disabled {
-  background: #cbd5e1;
-  cursor: not-allowed;
-}
 .appeals-heading {
   display: flex;
   justify-content: space-between;
@@ -135,6 +95,15 @@ header p {
   color: #64748b;
   font-size: 14px;
 }
+
+.appeals-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+
+/* Поиск и фильтры */
 
 .appeals-filters {
   padding: 20px;
@@ -199,24 +168,41 @@ header p {
   background: #f1f5f9;
 }
 
-@media (max-width: 600px) {
-  .appeals-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 
-  .filters-row {
-    flex-direction: column;
-  }
+/* Таблица обращений */
 
-  .filters-row select,
-  .reset-button {
-    width: 100%;
-    flex: none;
-  }
+.table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* Кликабельные заголовки обращений */
+.appeals-table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.appeals-table th,
+.appeals-table td {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.appeals-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.appeals-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+
+/* Заголовки обращений */
 
 .appeal-title-button {
   padding: 0;
@@ -239,7 +225,136 @@ header p {
   border-radius: 2px;
 }
 
-/* Карточка обращения */
+
+/* Пагинация */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.pagination button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.pagination button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+
+/* Кнопки */
+
+.primary-button {
+  padding: 11px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  padding: 11px 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #334155;
+  cursor: pointer;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+
+/* Форма создания обращения */
+
+.create-appeal-form {
+  margin-bottom: 24px;
+  padding: 28px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.create-appeal-form h3 {
+  margin: 0 0 24px;
+}
+
+.create-appeal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.create-appeal-form input,
+.create-appeal-form textarea,
+.create-appeal-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #1e293b;
+  font: inherit;
+}
+
+.create-appeal-form textarea {
+  resize: vertical;
+}
+
+.create-appeal-form input:focus,
+.create-appeal-form textarea:focus,
+.create-appeal-form select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.create-appeal-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    2,
+    minmax(0, 1fr)
+  );
+  gap: 20px;
+}
+
+.create-appeal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+
+/* Подробная карточка обращения */
 
 .appeal-details {
   margin-bottom: 24px;
@@ -274,8 +389,6 @@ header p {
   background: #cbd5e1;
 }
 
-/* Описание */
-
 .appeal-description {
   margin: 24px 0;
   padding: 20px;
@@ -295,11 +408,12 @@ header p {
   overflow-wrap: anywhere;
 }
 
-/* Дополнительные данные */
-
 .appeal-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(180px, 1fr)
+  );
   gap: 20px;
 }
 
@@ -317,9 +431,45 @@ header p {
 .appeal-info-grid strong {
   color: #1e293b;
   font-size: 15px;
+  overflow-wrap: anywhere;
 }
 
+
+/* Адаптивность */
+
 @media (max-width: 600px) {
+  .dashboard {
+    padding: 20px;
+  }
+
+  .appeals-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .appeals-heading-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filters-row {
+    flex-direction: column;
+  }
+
+  .filters-row select,
+  .reset-button {
+    width: 100%;
+    flex: none;
+  }
+
+  .create-appeal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .create-appeal-form {
+    padding: 20px;
+  }
+
   .appeal-details {
     padding: 20px;
   }
